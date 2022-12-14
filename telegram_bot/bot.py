@@ -35,7 +35,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     print("on start command")
     user = update.effective_user
     await update.message.reply_html(
-        rf"Hi {user.mention_html()}!",
+        rf"{user.mention_html()}!",
         reply_markup=ForceReply(selective=True),
     )
 
@@ -58,8 +58,7 @@ async def photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     image_np = tf.keras.applications.mobilenet.preprocess_input(
         image_np[tf.newaxis, ...])
 
-    #pretrained_model = tf.keras.models.load_model('C:\\Empty') -- так можно делать если соханить модель локально
-    pretrained_model = tf.keras.applications.mobilenet.MobileNet()
+    pretrained_model = tf.keras.models.load_model('C:\\Empty')
     result_before_save = pretrained_model(image_np)
     decoded = imagenet_labels[np.argsort(result_before_save)[0, ::-1][:5] + 1]
 
@@ -85,6 +84,12 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Echo the user message."""
     await update.message.reply_text(update.message.text)
 
+async def anek_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    response = requests.get(
+        'http://rzhunemogu.ru/RandJSON.aspx?CType=1',
+        stream=False, verify=False)
+    model = json.loads(response.text.replace("\r\n", "xNx"))
+    await update.message.reply_text(model['content'].replace("xNx", "\n"))
 
 def init_bot() -> None:
     """Start the bot."""
@@ -95,6 +100,7 @@ def init_bot() -> None:
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("detect", detect_command))
+    application.add_handler(CommandHandler("anek", anek_command))
 
     # on non command i.e message - echo the message on Telegram
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
