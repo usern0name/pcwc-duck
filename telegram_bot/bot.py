@@ -58,7 +58,8 @@ async def photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     image_np = tf.keras.applications.mobilenet.preprocess_input(
         image_np[tf.newaxis, ...])
 
-    pretrained_model = tf.keras.models.load_model('C:\\Empty')
+    #pretrained_model = tf.keras.models.load_model('C:\\Empty') -- так можно делать если соханить модель локально
+    pretrained_model = tf.keras.applications.mobilenet.MobileNet()
     result_before_save = pretrained_model(image_np)
     decoded = imagenet_labels[np.argsort(result_before_save)[0, ::-1][:5] + 1]
 
