@@ -34,8 +34,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a message when the command /start is issued."""
     print("on start command")
     user = update.effective_user
+    message = None
+    if (user.id == 172510546):
+        message = "Дімасік, заїбав"
+    else:
+        message = user.mention_html()
     await update.message.reply_html(
-        rf"{user.mention_html()}!",
+        rf"{message}!",
         reply_markup=ForceReply(selective=True),
     )
 
