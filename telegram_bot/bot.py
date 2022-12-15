@@ -4,6 +4,7 @@ import numpy as np
 import tensorflow as tf
 import requests
 from PIL import Image
+import io
 
 from telegram import __version__ as TG_VER
 
@@ -27,6 +28,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+count = 0
 
 # Define a few command handlers. These usually take the two arguments update and
 # context.
@@ -97,6 +99,27 @@ async def anek_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     model = json.loads(response.text.replace("\r\n", "xNx"))
     await update.message.reply_text(model['content'].replace("xNx", "\n"))
 
+async def inter_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    global count
+    if count > 3:
+        await update.message.reply_text(f'В черзі {count} запита')
+    else:
+        try:
+            vls = update.message.text.split(' ')
+            count = count + 1
+            response = requests.get(
+                f'http://localhost:8660/{vls[1]}/{vls[2]}', stream=True,
+                verify=False)
+            count = count - 1
+            image = Image.open(response.raw)
+            img_byte_arr = io.BytesIO()
+            image.save(img_byte_arr, format='PNG')
+            img_byte_arr = img_byte_arr.getvalue()
+            await update.message.reply_photo(img_byte_arr)
+        except:
+            count = count - 1
+
+
 def init_bot() -> None:
     """Start the bot."""
     # Create the Application and pass it your bot's token.
@@ -107,6 +130,7 @@ def init_bot() -> None:
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("detect", detect_command))
     application.add_handler(CommandHandler("anek", anek_command))
+    application.add_handler(CommandHandler("inter", inter_command))
 
     # on non command i.e message - echo the message on Telegram
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
